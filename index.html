@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>成本管理系統 | SHANES</title>
+<style>
+:root{
+  --bg:#FAFAF8;--surface:#FFFFFF;--surface2:#F5F4F0;--border:#E8E4DE;--border2:#D5CFC6;
+  --ink:#2A2420;--ink2:#6B6560;--ink3:#9C9590;
+  --accent:#5A4AA0;--accent-bg:#EEEDFE;--accent2:#3A6E50;--accent2-bg:#DFF0E6;
+  --rose-bg:#F5E8E6;--rose:#8A4840;
+  --sky-bg:#E2EDF6;--sky:#2A5278;
+  --amber-bg:#F5EDD5;--amber:#7A5A20;
+  --green-bg:#E4F0D8;--green:#3A6020;
+  --other-bg:#F0EDE8;--other:#5A4F48;
+  --r:10px;--rs:7px;--sh:0 1px 4px rgba(42,36,32,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+.auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:48px 40px;text-align:center;max-width:400px;width:100%;box-shadow:0 4px 24px rgba(42,36,32,.10)}
+.auth-logo{font-size:22px;font-weight:600;color:var(--ink);letter-spacing:.04em;margin-bottom:4px}
+.auth-sub{font-size:11px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px}
+.google-btn{display:inline-flex;align-items:center;gap:10px;padding:11px 24px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .15s;font-family:inherit}
+.google-btn:hover{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}
+.auth-desc{font-size:11px;color:var(--ink3);margin-top:16px;line-height:1.8}
+.app-screen{display:none;height:100vh;flex-direction:column}
+.app-screen.visible{display:flex}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-logo{font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.03em}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-info{font-size:12px;color:var(--ink2)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#9C9590;transition:background .3s}
+.sync-dot.syncing{background:#F0A030;animation:pulse 1s infinite}
+.sync-dot.ok{background:#4A9060}
+.sync-dot.err{background:#C04840}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.signout-btn{background:none;border:none;font-size:11px;color:var(--ink3);cursor:pointer;font-family:inherit;padding:4px 8px;border-radius:var(--rs)}
+.signout-btn:hover{color:var(--ink);background:var(--surface2)}
+.shell{display:flex;flex:1;overflow:hidden}
+.sidebar{width:180px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.sb-logo h1{font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.03em;line-height:1.4}
+.sb-logo p{font-size:10px;color:var(--ink3);margin-top:2px;letter-spacing:.08em;text-transform:uppercase}
+.sb-nav{padding:10px 8px;flex:1}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;color:var(--ink2);font-size:12px;font-weight:400;transition:all .12s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+.ni:hover{background:var(--surface2);color:var(--ink)}
+.ni.active{background:var(--accent-bg);color:var(--accent);font-weight:500}
+.ni svg{opacity:.7;flex-shrink:0}.ni.active svg{opacity:1}
+.main{flex:1;padding:20px;overflow-y:auto;background:var(--bg)}
+.page{display:none}.page.active{display:block}
+.ph{margin-bottom:16px}
+.ph h2{font-size:17px;font-weight:500;color:var(--ink)}
+.ph p{font-size:12px;color:var(--ink3);margin-top:2px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;box-shadow:var(--sh)}
+.ct{font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:8px}
+label{font-size:11px;color:var(--ink2);display:block;margin-bottom:3px;font-weight:500;letter-spacing:.02em}
+input,select{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;color:var(--ink);background:var(--surface);font-family:inherit;outline:none;transition:border-color .12s;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--border2)}
+input::placeholder{color:var(--ink3)}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px}
+.sv{font-size:18px;font-weight:500;color:var(--ink)}
+.sl{font-size:11px;color:var(--ink3);margin-top:1px;letter-spacing:.03em}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.pill-甜顏{background:var(--accent-bg);color:var(--accent)}
+.pill-秘語{background:var(--accent2-bg);color:var(--accent2)}
+.pill-守護{background:var(--sky-bg);color:var(--sky)}
+.pill-雙色心情{background:var(--rose-bg);color:var(--rose)}
+.pill-可可碎片{background:var(--amber-bg);color:var(--amber)}
+.pill-籠子{background:var(--green-bg);color:var(--green)}
+.pill-default{background:var(--surface2);color:var(--ink2)}
+.mo{display:none;position:fixed;inset:0;background:rgba(42,36,32,.3);z-index:200;align-items:center;justify-content:center;padding:16px}
+.mo.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow:0 4px 24px rgba(42,36,32,.12)}
+.mh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.mn{font-size:15px;font-weight:500;color:var(--ink)}
+.mx{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:20px;line-height:1;padding:0;transition:color .12s}
+.mx:hover{color:var(--ink)}
+.mhdr{display:grid;gap:7px;align-items:center;margin-bottom:5px;padding:0 2px}
+.mrow{display:grid;gap:7px;align-items:center;margin-bottom:7px}
+.mh5{grid-template-columns:2fr 75px 58px 72px 24px}
+.mh4{grid-template-columns:2fr 68px 58px 72px 24px}
+.ch{font-size:11px;color:var(--ink2);text-align:center;letter-spacing:.03em}
+.ms,.mi{padding:6px 7px;border:1px solid var(--border);border-radius:var(--rs);font-size:12px;color:var(--ink);background:var(--surface);font-family:inherit;outline:none;width:100%;transition:border-color .12s}
+.mi{text-align:center}
+.dr{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:16px;line-height:1;transition:color .12s}
+.dr:hover{color:#C4857A}
+.cr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--ink2)}
+.cr:last-child{border-bottom:none}
+.cr.tot{font-size:13px;font-weight:500;color:var(--ink);padding-top:8px}
+.cr.sub{padding-left:10px;font-size:11px}
+.tb{display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:500;margin-right:3px}
+.tb-b{background:var(--accent-bg);color:var(--accent)}
+.tb-a{background:var(--accent2-bg);color:var(--accent2)}
+.ba{width:100%;padding:7px;background:none;border:1px dashed var(--border2);border-radius:var(--rs);font-size:12px;color:var(--ink2);cursor:pointer;font-family:inherit;transition:all .12s;margin-top:4px}
+.ba:hover{background:var(--surface2);color:var(--ink)}
+.btn{padding:7px 16px;border-radius:var(--rs);font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all .12s;display:inline-flex;align-items:center;gap:5px}
+.bp{background:var(--accent);color:#fff}.bp:hover{background:#4A3A90}
+.bs{background:var(--surface);color:var(--ink2);border:1px solid var(--border)}.bs:hover{border-color:var(--border2);color:var(--ink)}
+.bd{background:var(--rose-bg);color:var(--rose);border:1px solid #E8C8C4}.bd:hover{background:#EED8D5}
+.bg{background:none;border:none;color:var(--ink3);padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit}.bg:hover{color:var(--ink)}
+.ss{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.sstit{font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px}
+.mi-item{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px;transition:border-color .12s}
+.mi-item:hover{border-color:var(--border2)}
+.mi-info{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;min-width:0;flex:1}
+.mi-name{font-size:12px;font-weight:500;color:var(--ink)}
+.mi-acts{display:flex;gap:5px;flex-shrink:0;margin-left:8px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;z-index:500;transition:transform .3s;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.ptag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;background:var(--accent-bg);color:var(--accent);font-weight:500;margin-right:3px;margin-bottom:2px}
+.hint{font-size:11px;color:var(--ink3);margin-top:4px;line-height:1.5}
+.sz-section-lbl{font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin:8px 0 6px;display:flex;justify-content:space-between;align-items:center}
+.add-sz-btn{background:none;border:1px dashed var(--border2);border-radius:var(--rs);padding:4px 10px;font-size:11px;color:var(--ink2);cursor:pointer;font-family:inherit;transition:all .12s}
+.add-sz-btn:hover{background:var(--surface2);color:var(--ink)}
+.sz-row{display:grid;grid-template-columns:1fr 1fr 26px;gap:6px;align-items:center;margin-bottom:6px}
+.rm-sz-btn{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;transition:color .12s}
+.rm-sz-btn:hover{color:#C4857A}
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 8px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);min-height:36px;cursor:text;transition:border-color .12s}
+.tag-input-wrap:focus-within{border-color:var(--border2)}
+.tag-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;background:var(--accent-bg);color:var(--accent)}
+.tag-chip-rm{background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;line-height:1;padding:0;opacity:.7}
+.tag-chip-rm:hover{opacity:1}
+.tag-bare-input{border:none;outline:none;font-size:12px;color:var(--ink);background:transparent;font-family:inherit;min-width:80px;flex:1}
+.mat-filter-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.mfp{padding:3px 10px;border-radius:20px;font-size:11px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--ink2);transition:all .12s;font-family:inherit}
+.mfp:hover{border-color:var(--border2);color:var(--ink)}
+.mfp.active{background:var(--accent-bg);color:var(--accent);border-color:#C5BFF0;font-weight:500}
+.mat-section-hdr{font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.07em;text-transform:uppercase;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.mat-section-hdr:first-child{margin-top:0}
+.cat-tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.cat-bead{background:var(--accent-bg);color:var(--accent)}
+.cat-acc{background:var(--accent2-bg);color:var(--accent2)}
+.cat-other{background:var(--other-bg);color:var(--other)}
+.board-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.sw{position:relative;display:inline-block}
+.sw svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none}
+.si{padding:6px 10px 6px 28px;border:1px solid var(--border);border-radius:20px;background:var(--surface);font-size:12px;color:var(--ink);outline:none;width:160px;font-family:inherit}
+.fp{padding:4px 11px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--ink2);transition:all .12s;font-family:inherit}
+.fp:hover{border-color:var(--border2);color:var(--ink)}
+.fp.active{background:var(--accent-bg);color:var(--accent);border-color:#C5BFF0;font-weight:500}
+.price-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.price-table{width:100%;border-collapse:collapse;font-size:12px}
+.price-table th{padding:8px 10px;background:var(--surface2);font-size:11px;font-weight:500;color:var(--ink2);text-align:left;border-bottom:1px solid var(--border);letter-spacing:.04em;white-space:nowrap}
+.price-table th.sz-hdr{text-align:center;min-width:68px}
+.price-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.price-table tbody tr:last-child td{border-bottom:none}
+.price-table tbody tr:hover td{background:#FAFAF6;cursor:pointer}
+.td-name{font-size:13px;font-weight:500;color:var(--ink);line-height:1.3}
+.td-cost{text-align:right;white-space:nowrap;color:var(--ink2)}
+.td-sz{text-align:center;font-size:13px;font-weight:500;white-space:nowrap}
+.td-sz.na{color:var(--ink3);font-size:11px;font-weight:400}
+.sz-xs{background:#EAE8F4;color:#4A3A88}
+.sz-s{background:#E8F0EC;color:#2A5040}
+.sz-m{background:#FFF0C8;color:#7A5010}
+.sz-l{background:#EAE8F4;color:#4A3A88}
+.sz-xl{background:#E8F0EC;color:#2A5040}
+.group-hdr-row td{padding:6px 10px;background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.group-hdr-inner{display:flex;align-items:center;gap:6px}
+.group-count{font-size:11px;color:var(--ink3);font-weight:400}
+.modal-section{margin-bottom:14px}
+.modal-section-title{font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.modal-cost-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;color:var(--ink2);border-bottom:1px solid var(--border)}
+.modal-cost-row:last-child{border-bottom:none}
+.modal-cost-row.total{font-size:13px;font-weight:500;color:var(--ink);padding-top:7px}
+.modal-price-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.modal-price-cell{text-align:center;padding:8px 4px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surface2)}
+.modal-price-cell.active{background:var(--accent-bg);border-color:#C5BFF0}
+
+/* ── Hamburger / Drawer ── */
+.hbtn{background:none;border:none;cursor:pointer;padding:4px;display:flex;flex-direction:column;gap:5px;flex-shrink:0;margin-right:4px}
+.hbtn span{display:block;width:20px;height:1.5px;background:var(--ink2);border-radius:2px;transition:all .25s}
+.hbtn.open span:nth-child(1){transform:rotate(45deg) translate(4.7px,4.7px)}
+.hbtn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.hbtn.open span:nth-child(3){transform:rotate(-45deg) translate(4.7px,-4.7px)}
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(42,36,32,.25);z-index:100}
+.drawer-overlay.open{display:block}
+.drawer{position:fixed;top:0;left:0;width:200px;height:100vh;background:var(--surface);border-right:1px solid var(--border);z-index:110;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:2px 0 12px rgba(42,36,32,.10)}
+.drawer.open{transform:translateX(0)}
+.dl{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.dl h1{font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.03em}
+.dl p{font-size:10px;color:var(--ink3);margin-top:3px;letter-spacing:.06em}
+.dn{padding:10px 8px;flex:1}
+@media (min-width: 768px) {
+  .hbtn { display: none; }
+  .sidebar { display: flex !important; }
+}
+@media (max-width: 767px) {
+  .sidebar { display: none !important; }
+}
+
+.exp-btn{padding:5px 12px;border-radius:var(--rs);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--ink2);font-family:inherit;transition:all .12s;display:inline-flex;align-items:center;gap:5px}
+.exp-btn:hover{border-color:var(--border2);color:var(--ink);background:var(--surface2)}
+.exp-btn svg{opacity:.6}
+
+/* ── 標籤自動完成下拉 ── */
+.tag-ac-wrap{position:relative;flex:1;min-width:80px}
+.tag-ac-list{position:absolute;top:calc(100% + 4px);left:0;min-width:160px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rs);box-shadow:0 4px 12px rgba(42,36,32,.12);z-index:200;overflow:hidden;display:none}
+.tag-ac-list.show{display:block}
+.tag-ac-item{padding:7px 12px;font-size:12px;color:var(--ink);cursor:pointer;transition:background .1s}
+.tag-ac-item:hover,.tag-ac-item.focused{background:var(--accent-bg);color:var(--accent)}
+.tag-ac-item mark{background:none;color:var(--accent);font-weight:500}
+.tag-ac-empty{padding:7px 12px;font-size:12px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">成本管理系統</div>
+    <div class="auth-sub">⊹ SHANES 絢 ⊹</div>
+    <button class="google-btn" onclick="signIn()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      使用 Google 帳號登入
+    </button>
+    <div class="auth-desc">資料存於您的 Google Drive<br>僅限您本人存取</div>
+  </div>
+</div>
+<div class="app-screen" id="app-screen">
+  <div class="topbar">
+    <button class="hbtn" id="hbtn" onclick="toggleDrawer()" aria-label="選單">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-logo">成本管理系統 <span style="font-size:10px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase;margin-left:6px">SHANES</span></div>
+    <div class="topbar-right">
+      <div class="sync-dot" id="sync-dot" title="同步狀態"></div>
+      <div class="user-info" id="user-email"></div>
+      <button class="exp-btn" onclick="exportBackup()" title="匯出完整備份 JSON">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>
+        備份
+      </button>
+      <button class="exp-btn" onclick="triggerImport()" title="從備份 JSON 還原資料" style="color:var(--rose);border-color:var(--rose-bg)">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17V7M6 11l4-4 4 4"/><path d="M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>
+        還原
+      </button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBackup(event)">
+      <button class="signout-btn" onclick="signOut()">登出</button>
+    </div>
+  </div>
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="dl"><h1>成本管理系統</h1><p>⊹ SHANES 絢 ⊹</p></div>
+    <nav class="dn">
+      <button class="ni active" id="dnav-board" onclick="swPage('board',this)">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>查價板
+      </button>
+      <button class="ni" id="dnav-calc" onclick="swPage('calc',this)">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10h6M10 7v6"/></svg>成本計算
+      </button>
+      <button class="ni" id="dnav-materials" onclick="swPage('materials',this)">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="3"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2"/></svg>材料單價
+      </button>
+      <button class="ni" id="dnav-manage" onclick="swPage('manage',this)">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h12M4 10h12M4 14h8"/></svg>款式管理
+      </button>
+    </nav>
+  </div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sb-logo"><h1>成本管理系統</h1><p>⊹ SHANES 絢 ⊹</p></div>
+      <nav class="sb-nav">
+        <button class="ni active" onclick="swPage('board',this)">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>查價板
+        </button>
+        <button class="ni" onclick="swPage('calc',this)">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10h6M10 7v6"/></svg>成本計算
+        </button>
+        <button class="ni" onclick="swPage('materials',this)">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="3"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2"/></svg>材料單價
+        </button>
+        <button class="ni" onclick="swPage('manage',this)">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h12M4 10h12M4 14h8"/></svg>款式管理
+        </button>
+      </nav>
+    </aside>
+    <main class="main">
+      <div class="page active" id="page-board">
+        <div class="ph"><h2>查價板</h2><p>點擊列查看詳細成本與售價</p></div>
+        <div class="board-toolbar">
+          <div class="sw">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15 3 3"/></svg>
+            <input class="si" type="text" placeholder="搜尋款式..." oninput="renderBoard()" id="search">
+          </div>
+          <div id="sfilters" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+          <button class="exp-btn" onclick="exportCSV()" title="匯出查價板為 Excel CSV">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>
+            匯出 CSV
+          </button>
+          <button class="exp-btn" onclick="triggerBoardImport()" title="從 CSV 匯入款式" style="color:var(--accent);border-color:var(--accent-bg)">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17V7M6 11l4-4 4 4"/><path d="M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>
+            匯入 CSV
+          </button>
+          <input type="file" id="board-import-file" accept=".csv" style="display:none" onchange="importBoardCSV(event)">
+        </div>
+        <div class="price-table-wrap">
+          <table class="price-table">
+            <thead><tr>
+              <th style="min-width:155px">款式名稱</th>
+              <th>使用珠子</th>
+              <th class="td-cost" style="text-align:right">成本</th>
+              <th class="sz-hdr" style="background:#EAE8F4;color:#4A3A88">XS<br><span style="font-weight:400;font-size:10px">10~11.5</span></th>
+              <th class="sz-hdr" style="background:#E8F0EC;color:#2A5040">S<br><span style="font-weight:400;font-size:10px">12~13.5</span></th>
+              <th class="sz-hdr" style="background:#FFF0C8;color:#7A5010">M<br><span style="font-weight:400;font-size:10px">14~15.5</span></th>
+              <th class="sz-hdr" style="background:#EAE8F4;color:#4A3A88">L<br><span style="font-weight:400;font-size:10px">16~17.5</span></th>
+              <th class="sz-hdr" style="background:#E8F0EC;color:#2A5040">XL<br><span style="font-weight:400;font-size:10px">18~19.5</span></th>
+            </tr></thead>
+            <tbody id="board-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="page" id="page-calc">
+        <div class="ph"><h2>成本計算</h2><p>選擇材料自動帶出單價</p></div>
+        <div class="card">
+          <div class="ct">基本設定</div>
+          <div class="g2">
+            <div><label>手圍大小</label>
+              <select id="cw" onchange="ca()">
+                <option value="XS" selected>XS，10~11.5 cm</option>
+                <option value="S">S，12~13.5 cm</option>
+                <option value="M">M，14~15.5 cm</option>
+                <option value="L">L，16~17.5 cm</option>
+                <option value="XL">XL，18~19.5 cm</option>
+              </select>
+            </div>
+            <div>
+              <label>價格間距 (NT$)</label>
+              <input type="number" id="price-step" value="30" min="0" onchange="ca()">
+              <div class="hint">每升一個手圍尺寸，價格遞增此金額</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct"><span>珠子</span><span style="font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink3)">估算：<strong id="ctb" style="color:var(--ink)">—</strong></span></div>
+          <div style="margin-bottom:8px"><label>主珠徑（估算用）</label><select id="cms" onchange="ca()" style="width:120px"><option value="3">3mm</option><option value="4">4mm</option><option value="5">5mm</option><option value="6" selected>6mm</option><option value="8">8mm</option><option value="8.5">8.5mm</option></select></div>
+          <div class="mhdr mh5"><div class="ch" style="text-align:left">名稱</div><div class="ch">珠徑</div><div class="ch">類數</div><div class="ch">單價</div><div></div></div>
+          <div id="blist"></div>
+          <button class="ba" onclick="ab()">＋ 新增珠子</button>
+        </div>
+        <div class="card">
+          <div class="ct">配件</div>
+          <div class="mhdr mh4"><div class="ch" style="text-align:left">名稱</div><div class="ch">尺寸</div><div class="ch">數量</div><div class="ch">單價</div><div></div></div>
+          <div id="alist"></div>
+          <button class="ba" onclick="aa()">＋ 新增配件</button>
+        </div>
+        <div class="card">
+          <div class="ct">費用設定</div>
+          <div class="g2">
+            <div><label>包材(NT$)</label><input type="number" id="cpkg" value="60" min="0" onchange="ca()"></div>
+            <div><label>人力(NT$)</label><input type="number" id="clab" value="100" min="0" onchange="ca()"></div>
+            <div><label>其他(NT$)</label><input type="number" id="cmisc" value="0" min="0" onchange="ca()"></div>
+            <div><label>利潤(%)</label><input type="number" id="cmk" value="20" min="0" onchange="ca()"></div>
+          </div>
+        </div>
+        <div class="g3">
+          <div class="stat"><div class="sv" id="rmat">NT$0</div><div class="sl">材料成本</div></div>
+          <div class="stat"><div class="sv" id="rbase">NT$0</div><div class="sl">總成本</div></div>
+          <div class="stat"><div class="sv" id="rprice">NT$0</div><div class="sl">建議售價</div></div>
+        </div>
+        <div class="card">
+          <div class="ct">費用明細與各手圍售價</div>
+          <div id="cbd"></div>
+          <div id="size-prices" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"></div>
+          <div class="ss">
+            <div class="sstit">儲存為款式</div>
+            <div class="g2" style="margin-bottom:8px">
+              <div style="grid-column:1/-1"><label>款式名稱</label><input type="text" id="csn" placeholder="例：蜜柚粮"></div>
+              <div><label>系列</label><input type="text" id="css2" placeholder="例：甜顏"></div>
+              <div><label>備註</label><input type="text" id="csnt" placeholder="選填"></div>
+            </div>
+            <button class="btn bp" onclick="sfc()">儲存到查價板（全尺寸）</button>
+          </div>
+        </div>
+      </div>
+      <div class="page" id="page-materials">
+        <div class="ph"><h2>材料單價</h2><p>管理珠子、配件與其他材料的單價</p></div>
+        <div class="card">
+          <div class="ct"><span id="mat-form-title">新增材料</span><button class="bg" onclick="resetMatForm()">清空</button></div>
+          <div class="g2" style="margin-bottom:10px">
+            <div><label>材料名稱</label><input type="text" id="mf-name" placeholder="例：紫水晶"></div>
+            <div><label>類型</label>
+              <select id="mf-type" onchange="renderSzEditor()">
+                <option value="bead">珠子</option>
+                <option value="acc">配件</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+          </div>
+          <div><label>分類標籤</label>
+            <div class="tag-input-wrap" id="tag-input-wrap" onclick="document.getElementById('tag-bare').focus()">
+              <div id="tag-chips"></div>
+              <div class="tag-ac-wrap">
+                <input type="text" id="tag-bare" class="tag-bare-input" placeholder="輸入後按 Enter 或點選">
+                <div class="tag-ac-list" id="tag-ac-list"></div>
+              </div>
+            </div>
+            <div class="hint">例如：水晶、月光石、天然石、金屬</div>
+          </div>
+          <div class="sz-section-lbl" style="margin-top:10px">
+            <span>尺寸與單價</span>
+            <button class="add-sz-btn" onclick="addSz()">＋ 新增尺寸</button>
+          </div>
+          <div id="sz-editor"></div>
+          <div style="display:flex;gap:7px;margin-top:10px">
+            <button class="btn bp" onclick="saveMat()" id="mat-save-btn">新增材料</button>
+            <button class="btn bs" onclick="resetMatForm()" id="mat-cancel-btn" style="display:none">取消</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+          <div class="mat-filter-bar" id="mat-filter-bar" style="margin-bottom:0"></div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="exp-btn" onclick="exportMatCSV()" title="匯出材料單價為 CSV">
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>
+              匯出 CSV
+            </button>
+            <button class="exp-btn" onclick="triggerMatImport()" title="從 CSV 匯入材料" style="color:var(--accent);border-color:var(--accent-bg)">
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17V7M6 11l4-4 4 4"/><path d="M3 15v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>
+              匯入 CSV
+            </button>
+            <input type="file" id="mat-import-file" accept=".csv" style="display:none" onchange="importMatCSV(event)">
+          </div>
+        </div>
+        <div id="mat-list-wrap"></div>
+      </div>
+      <div class="page" id="page-manage">
+        <div class="ph"><h2>款式管理</h2><p>新增、編輯或刪除款式</p></div>
+        <div class="card">
+          <div class="ct"><span id="mtit">新增款式</span><button class="bg" onclick="rm()">清空</button></div>
+          <div class="g2">
+            <div style="grid-column:1/-1"><label>款式名稱</label><input type="text" id="mname" placeholder="例：D08 蜜柚粮"></div>
+            <div><label>系列</label><input type="text" id="mser" placeholder="例：甜顏"></div>
+            <div><label>成本(NT$)</label><input type="number" id="mcost" placeholder="選填"></div>
+            <div style="grid-column:1/-1"><label>使用珠子/備註</label><input type="text" id="mnote" placeholder="例：紫水扸6mm×16、金隔片×4"></div>
+          </div>
+          <div style="font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px">各手圍售價（NT$）</div>
+          <div class="g5" id="msi"></div>
+          <div style="display:flex;gap:7px">
+            <button class="btn bp" onclick="sm()" id="msb">儲存款式</button>
+            <button class="btn bs" onclick="rm()" id="mcb" style="display:none">取消</button>
+          </div>
+        </div>
+        <div id="mlist"></div>
+      </div>
+    </main>
+  </div>
+</div>
+<div class="mo" id="mo" onclick="if(event.target===this)cm()">
+  <div class="modal">
+    <div class="mh"><div><div class="mn" id="moname"></div><div id="mobadge" style="margin-top:4px"></div></div><button class="mx" onclick="cm()">&#xd7;</button></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CLIENT_ID='152520502160-5mdv37of27mvuom13l3ocelolgq1g2tb.apps.googleusercontent.com';
+const SCOPES='https://www.googleapis.com/auth/drive';
+const DRIVE_FILE='sheans-bracelet-data.json';
+const SIZES=[{key:'XS',label:'XS',range:'10~11.5cm'},{key:'S',label:'S',range:'12~13.5cm'},{key:'M',label:'M',range:'14~15.5cm'},{key:'L',label:'L',range:'16~17.5cm'},{key:'XL',label:'XL',range:'18~19.5cm'}];
+const SIZE_ORDER=['XS','S','M','L','XL'];
+const WMM={XS:105,S:125,M:145,L:165,XL:185};
+const SZ_CLS={XS:'sz-xs',S:'sz-s',M:'sz-m',L:'sz-l',XL:'sz-xl'};
+const TYPE_LABEL={bead:'珠子',acc:'配件',other:'其他'};
+const TYPE_CLS={bead:'cat-bead',acc:'cat-acc',other:'cat-other'};
+function parseMm(sz){const n=parseFloat(sz);return isNaN(n)?9999:n;}
+function sortSizes(sizes){return [...sizes].sort((a,b)=>parseMm(a.sz)-parseMm(b.sz));}
+
+const DEFAULT_MATS=[
+  {id:'b1',name:'黑碧璽',type:'bead',tags:['天然石'],sizes:[{sz:'4mm',price:3},{sz:'6mm',price:5},{sz:'8mm',price:10}]},
+  {id:'b2',name:'拉長石',type:'bead',tags:['天然石','月光石'],sizes:[{sz:'3mm',price:2},{sz:'4mm',price:5},{sz:'6mm',price:10},{sz:'8mm',price:30}]},
+  {id:'b3',name:'白水晶',type:'bead',tags:['水晶'],sizes:[{sz:'4mm',price:5},{sz:'6mm',price:10},{sz:'8mm',price:15}]},
+  {id:'b4',name:'藍月光',type:'bead',tags:['月光石'],sizes:[{sz:'3mm',price:2},{sz:'4mm',price:5},{sz:'6mm',price:15},{sz:'8mm',price:25}]},
+  {id:'b5',name:'白月光',type:'bead',tags:['月光石'],sizes:[{sz:'4mm',price:5},{sz:'6mm',price:10},{sz:'8mm',price:15}]},
+  {id:'b6',name:'茶晶',type:'bead',tags:['水晶'],sizes:[{sz:'4mm',price:3},{sz:'6mm',price:5},{sz:'8mm',price:10}]},
+  {id:'b7',name:'黃塔晶／黃水晶',type:'bead',tags:['水晶'],sizes:[{sz:'4mm',price:3},{sz:'6mm',price:10},{sz:'8mm',price:20}]},
+  {id:'b8',name:'金／銅髮晶',type:'bead',tags:['水晶','髮晶'],sizes:[{sz:'4mm',price:5},{sz:'6mm',price:15},{sz:'8mm',price:25}]},
+  {id:'b9',name:'橙月光',type:'bead',tags:['月光石'],sizes:[{sz:'3mm',price:2},{sz:'4mm',price:3},{sz:'6mm',price:5},{sz:'8mm',price:10}]},
+  {id:'b10',name:'紅瑪瑙',type:'bead',tags:['天然石'],sizes:[{sz:'4mm',price:1},{sz:'6mm',price:3},{sz:'8mm',price:8}]},
+  {id:'b11',name:'石榴石',type:'bead',tags:['天然石'],sizes:[{sz:'3mm',price:2},{sz:'4mm',price:3},{sz:'6mm',price:8},{sz:'8mm',price:20}]},
+  {id:'b12',name:'草莓晶',type:'bead',tags:['水晶'],sizes:[{sz:'3mm',price:2},{sz:'4mm',price:3},{sz:'6mm',price:5},{sz:'8mm',price:10}]},
+  {id:'b13',name:'粉晶',type:'bead',tags:['水晶'],sizes:[{sz:'4mm',price:3},{sz:'6mm',price:8},{sz:'8mm',price:15}]},
+  {id:'b14',name:'膠花',type:'bead',tags:['膠珠'],sizes:[{sz:'6mm',price:10},{sz:'8mm',price:20}]},
+  {id:'b15',name:'葡萄石',type:'bead',tags:['天然石'],sizes:[{sz:'4mm',price:5},{sz:'6mm',price:15},{sz:'8mm',price:30}]},
+  {id:'b16',name:'薰衣草',type:'bead',tags:['天然石'],sizes:[{sz:'4mm',price:3},{sz:'6mm',price:10},{sz:'8mm',price:20}]},
+  {id:'b17',name:'紫幽靈',type:'bead',tags:['水晶'],sizes:[{sz:'6mm',price:8},{sz:'8mm',price:15}]},
+  {id:'b18',name:'紫水晶',type:'bead',tags:['水晶'],sizes:[{sz:'4mm',price:3},{sz:'6mm',price:5},{sz:'8mm',price:15}]},
+  {id:'b19',name:'藍紋瑪瑙',type:'bead',tags:['天然石'],sizes:[{sz:'4mm',price:5},{sz:'6mm',price:15},{sz:'8mm',price:30}]},
+  {id:'b20',name:'海藍寶',type:'bead',tags:['天然石'],sizes:[{sz:'4mm',price:5},{sz:'6mm',price:15},{sz:'8mm',price:30}]},
+  {id:'b21',name:'銀月光',type:'bead',tags:['月光石'],sizes:[{sz:'4mm',price:5},{sz:'6mm',price:5}]},
+  {id:'b22',name:'深膠花',type:'bead',tags:['膠珠'],sizes:[{sz:'8mm',price:15}]},
+  {id:'b23',name:'淺膠花',type:'bead',tags:['膠珠'],sizes:[{sz:'8mm',price:15}]},
+  {id:'a1',name:'金南瓜',type:'acc',tags:['金屬'],sizes:[{sz:'5mm',price:4}]},
+  {id:'a2',name:'金隔片',type:'acc',tags:['金屬'],sizes:[{sz:'3mm',price:1}]},
+  {id:'a3',name:'南瓜飛碟',type:'acc',tags:['金屬'],sizes:[{sz:'4.5mm',price:3}]},
+  {id:'a4',name:'麻花片',type:'acc',tags:['金屬'],sizes:[{sz:'4mm',price:3}]},
+  {id:'a5',name:'花托',type:'acc',tags:['金屬'],sizes:[{sz:'3mm',price:2}]},
+];
+
+const PRESET_PRODUCTS=[
+  {id:101,name:'D01 銅花紫影｜紫影',series:'甜顏',cost:240,note:'銅花6mm、紫幽靈6mm',prices:{XS:480,S:500,M:520,L:540,XL:560}},
+  {id:102,name:'D02 銅花紫影｜銅韻',series:'甜顏',cost:315,note:'銅花6mm',prices:{XS:570,S:590,M:610,L:630,XL:650}},
+  {id:103,name:'D03 銅花紫影｜朝花',series:'甜顏',cost:221,note:'銅花6mm',prices:{XS:460,S:480,M:500,L:520,XL:540}},
+  {id:104,name:'D04 粉藍水玉',series:'甜顏',cost:299,note:'粉晶6mm、藍月光6mm',prices:{XS:550,S:570,M:590,L:610,XL:630}},
+  {id:105,name:'D05 粉黃水玉',series:'甜顏',cost:259,note:'粉晶6mm、黃水晶6mm',prices:{XS:500,S:520,M:540,L:560,XL:580}},
+  {id:106,name:'D06 莓粉水玉',series:'甜顏',cost:219,note:'草莓晶6mm、粉晶6mm',prices:{XS:460,S:480,M:500,L:520,XL:540}},
+  {id:107,name:'D07 碧藍水玉',series:'甜顏',cost:355,note:'藍月光6mm',prices:{XS:620,S:640,M:660,L:680,XL:700}},
+  {id:108,name:'D08 蜜柚糖',series:'甜顏',cost:257,note:'膠花8mm、黃塔晶6mm、白月光6mm',prices:{XS:500,S:520,M:540,L:560,XL:580}},
+  {id:109,name:'D09 薄荷糖',series:'甜顏',cost:342,note:'黃髮晶6mm、海藍寶6mm、藍月光6mm',prices:{XS:600,S:620,M:640,L:660,XL:680}},
+  {id:110,name:'D10 梅子糖',series:'甜顏',cost:247,note:'粉晶6mm、薰衣草6mm、膠花8mm',prices:{XS:490,S:510,M:530,L:550,XL:570}},
+  {id:111,name:'D11 棉花糖',series:'甜顏',cost:307,note:'藍紋瑪瑙6mm、粉晶6mm、海藍寶6mm',prices:{XS:560,S:580,M:600,L:620,XL:640}},
+  {id:112,name:'D12 甜顏｜1 藍紋瑪瑙',series:'甜顏',cost:293,note:'藍紋瑪瑙6mm',prices:{XS:540,S:560,M:580,L:600,XL:620}},
+  {id:113,name:'D13 甜顏｜2 橙月光',series:'甜顏',cost:261,note:'橙月光6mm',prices:{XS:510,S:530,M:550,L:570,XL:590}},
+  {id:114,name:'D14 甜顏｜3 白月光',series:'甜顏',cost:278,note:'白月光6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:115,name:'D15 甜顏｜4 葡萄石',series:'甜顏',cost:283,note:'葡萄石6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:116,name:'D16 甜顏｜5 薰衣草',series:'甜顏',cost:266,note:'薰衣草6mm',prices:{XS:510,S:530,M:550,L:570,XL:590}},
+  {id:117,name:'D17 甜顏｜6 粉晶',series:'甜顏',cost:266,note:'粉晶6mm',prices:{XS:510,S:530,M:550,L:570,XL:590}},
+  {id:118,name:'D18 甜顏｜7 海藍寶',series:'甜顏',cost:288,note:'海藍寶6mm',prices:{XS:540,S:560,M:580,L:600,XL:620}},
+  {id:119,name:'D19 秘語｜1 白水晶',series:'秘語',cost:278,note:'白水晶6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:120,name:'D20 秘語｜2 拉長石',series:'秘語',cost:293,note:'拉長石6mm',prices:{XS:540,S:560,M:580,L:600,XL:620}},
+  {id:121,name:'D21 秘語｜3 黃水晶',series:'秘語',cost:271,note:'黃水晶6mm',prices:{XS:520,S:540,M:560,L:580,XL:600}},
+  {id:122,name:'D22 秘語｜4 紫水晶',series:'秘語',cost:266,note:'紫水晶6mm',prices:{XS:510,S:530,M:550,L:570,XL:590}},
+  {id:123,name:'D23 秘語｜5 石榴石',series:'秘語',cost:271,note:'石榴石6mm',prices:{XS:null,S:null,M:600,L:620,XL:640}},
+  {id:124,name:'D24 秘語｜6 草莓晶',series:'秘語',cost:281,note:'草莓晶6mm',prices:{XS:null,S:null,M:600,L:610,XL:630}},
+  {id:125,name:'D25 秘語｜7 星品',series:'秘語',cost:259,note:'6mm',prices:{XS:null,S:null,M:590,L:600,XL:630}},
+  {id:126,name:'D26 守護4號｜1 藍月光',series:'守護',cost:278,note:'藍月光4mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:127,name:'D27 守護4號｜2 草莓晶',series:'守護',cost:278,note:'草莓晶4mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:128,name:'D28 守護4號｜3 粉晶',series:'守護',cost:278,note:'粉晶4mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:129,name:'D29 守護4號｜4 黃水晶',series:'守護',cost:278,note:'黃水晶4mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:130,name:'D30 守護4號｜5 紫水晶',series:'守護',cost:278,note:'紫水晶4mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:131,name:'D31 守護4號｜6 紅瑪瑙',series:'守護',cost:278,note:'紅瑪瑙4mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:132,name:'D32 守護4號｜7 星草莓',series:'守護',cost:278,note:'草莓4mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:133,name:'D33 守護6號｜1 藍月光',series:'守護',cost:278,note:'藍月光6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:134,name:'D34 守護6號｜2 藍紋',series:'守護',cost:278,note:'藍紋瑪瑙6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:135,name:'D35 守護6號｜3 粉晶',series:'守護',cost:278,note:'粉晶6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:136,name:'D36 守護6號｜4 紫水晶',series:'守護',cost:278,note:'紫水晶6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:137,name:'D37 守護6號｜5 薰衣草',series:'守護',cost:278,note:'薰衣草6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:138,name:'D38 守護6號｜6 紅瑪瑙',series:'守護',cost:278,note:'紅瑪瑙6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:139,name:'D39 守護6號｜7 黑碧璽',series:'守護',cost:278,note:'黑碧璽6mm',prices:{XS:530,S:550,M:570,L:590,XL:610}},
+  {id:201,name:'C01 籠花素影｜素影',series:'籠子',cost:240,note:'籠花6mm',prices:{XS:null,S:null,M:null,L:null,XL:null}},
+  {id:202,name:'C02 籠花素影｜刺繡',series:'籠子',cost:315,note:'籠花6mm',prices:{XS:null,S:null,M:null,L:null,XL:null}},
+  {id:203,name:'C03 籠花素影｜朝花',series:'籠子',cost:221,note:'籠花6mm',prices:{XS:null,S:null,M:null,L:null,XL:null}},
+  {id:204,name:'C04 籠花素影｜藤花石',series:'籠子',cost:254,note:'藤花石6mm',prices:{XS:null,S:null,M:null,L:null,XL:null}},
+  {id:205,name:'C05 籠子小｜籠紛小花',series:'籠子',cost:199,note:'小籠紛花6mm',prices:{XS:null,S:null,M:550,L:null,XL:null}},
+  {id:206,name:'C06 籠子大｜籠紛小花',series:'籠子',cost:144,note:'大籠紛花6mm',prices:{XS:null,S:null,M:490,L:null,XL:null}},
+  {id:207,name:'C07 石英籠石手鍊',series:'籠子',cost:144,note:'石英6mm',prices:{XS:null,S:null,M:null,L:null,XL:null}},
+];
+
+let products=[],materials=[],calcBeads=[{name:'紫水晶',size:'6mm',count:16,customPrice:null}],calcAccs=[{name:'金隔片',size:'3mm',count:4,price:null}];
+let editId=null,matEditId=null,af='全部',matFilter='全部',saveTimer=null,editSizes=[],editTags=[];
+let accessToken=null,driveFileId=null,currentUser=null;
+
+// Auth
+function loadGSI(){return new Promise(resolve=>{if(window.google&&window.google.accounts){resolve(true);return;}const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=()=>resolve(true);s.onerror=()=>resolve(false);document.head.appendChild(s);});}
+document.addEventListener('DOMContentLoaded',()=>loadGSI());
+async function signIn(){
+  const btn=document.querySelector('.google-btn'),orig=btn.innerHTML;
+  btn.innerHTML='載入中...';btn.disabled=true;
+  const ok=await loadGSI();
+  if(!ok||!window.google||!window.google.accounts){alert('無法載入 Google 登入，請確認網路後重新整理');btn.innerHTML=orig;btn.disabled=false;return;}
+  google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:async resp=>{
+    btn.innerHTML=orig;btn.disabled=false;
+    if(resp.error){toast('登入失敗：'+resp.error);return;}
+    accessToken=resp.access_token;
+    try{const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+accessToken}});currentUser=await r.json();document.getElementById('user-email').textContent=currentUser.email||'';}catch(e){}
+    showApp();await loadFromDrive();
+  }}).requestAccessToken();
+}
+function signOut(){if(accessToken&&window.google?.accounts?.oauth2)google.accounts.oauth2.revoke(accessToken);accessToken=null;driveFileId=null;currentUser=null;document.getElementById('app-screen').classList.remove('visible');document.getElementById('auth-screen').style.display='flex';}
+function showApp(){document.getElementById('auth-screen').style.display='none';document.getElementById('app-screen').classList.add('visible');}
+
+// Drive — 共用固定檔案 ID，所有帳號同步同一份資料
+const SHARED_FILE_ID='120_Da3DdQkZJ31szFLvwE1vJqcIQKyv0';
+function setSyncDot(state){document.getElementById('sync-dot').className='sync-dot '+state;}
+async function loadFromDrive(){
+  setSyncDot('syncing');
+  try{
+    const res=await fetch(`https://www.googleapis.com/drive/v3/files/${SHARED_FILE_ID}?alt=media`,{headers:{Authorization:'Bearer '+accessToken}});
+    if(res.status===403||res.status===401){
+      // 帳號沒有存取權限 → 顯示清楚提示，停留在登入畫面
+      accessToken=null;
+      document.getElementById('app-screen').classList.remove('visible');
+      document.getElementById('auth-screen').style.display='flex';
+      showAccessDenied();
+      setSyncDot('err');
+      return;
+    }
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    if(json.products)products=json.products;
+    if(json.materials)materials=json.materials;
+    materials.forEach(m=>{if(!m.tags)m.tags=[];});
+    setSyncDot('ok');
+    renderAll();
+  }catch(e){
+    console.error('Drive load error',e);
+    products=JSON.parse(JSON.stringify(PRESET_PRODUCTS));
+    materials=JSON.parse(JSON.stringify(DEFAULT_MATS));
+    setSyncDot('err');
+    renderAll();
+  }
+}
+
+function showAccessDenied(){
+  // 在登入畫面下方顯示權限不足的提示
+  const card=document.querySelector('.auth-card');
+  const existing=document.getElementById('access-denied-msg');
+  if(existing)existing.remove();
+  const msg=document.createElement('div');
+  msg.id='access-denied-msg';
+  msg.style.cssText='margin-top:16px;padding:10px 14px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;font-size:12px;color:#DC2626;line-height:1.6;text-align:left';
+  msg.innerHTML='<strong>⚠️ 此帳號無存取權限</strong><br>請聯絡管理員將您的 Gmail 加入系統，或改用已授權的帳號登入。';
+  card.appendChild(msg);
+}
+async function saveToDrive(){
+  if(!accessToken)return;setSyncDot('syncing');
+  const body=JSON.stringify({products,materials});
+  try{
+    const res=await fetch(`https://www.googleapis.com/upload/drive/v3/files/${SHARED_FILE_ID}?uploadType=media`,{method:'PATCH',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body});
+    if(res.status===403||res.status===401){setSyncDot('err');console.warn('Save blocked: no write permission');return;}
+    setSyncDot('ok');
+  }catch(e){console.error('Drive save error',e);setSyncDot('err');}
+}
+function schedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveToDrive,1800);}
+
+// Helpers
+function nid(){return products.length?Math.max(...products.map(p=>p.id))+1:1;}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function ph(s){if(!s)return'';const c=['甜顏','秘語','守護','雙色心情','可可碎片','籠子'].includes(s)?'pill-'+s:'pill-default';return`<span class="pill ${c}">${s}</span>`;}
+function swPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  const dn=document.getElementById('dnav-'+id);
+  if(dn)dn.classList.add('active');
+  closeDrawer();
+}
+function toggleDrawer(){
+  const d=document.getElementById('drawer'),o=document.getElementById('drawer-overlay'),b=document.getElementById('hbtn');
+  const open=d.classList.toggle('open');o.classList.toggle('open',open);b.classList.toggle('open',open);
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('hbtn').classList.remove('open');
+}
+function renderAll(){renderSzEditor();renderTagChips();renderBoard();renderFilters();renderML();renderMatPage();renderMatFilters();buildMSI();ca();}
+
+// Tags
+function renderTagChips(){
+  const chips=document.getElementById('tag-chips');
+  chips.innerHTML=editTags.map((t,i)=>`<span class="tag-chip">${t}<button class="tag-chip-rm" data-i="${i}">×</button></span>`).join('');
+  chips.querySelectorAll('.tag-chip-rm').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();editTags.splice(parseInt(btn.dataset.i),1);renderTagChips();});});
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const tagInput=document.getElementById('tag-bare');
+  const tagAcList=document.getElementById('tag-ac-list');
+  let acFocusIdx=-1;
+
+  function getTagSuggestions(query){
+    const allTags=getAllTags();
+    const q=query.trim().toLowerCase();
+    if(!q) return allTags.filter(t=>!editTags.includes(t));
+    return allTags.filter(t=>t.toLowerCase().includes(q)&&!editTags.includes(t));
+  }
+
+  function renderTagAc(query){
+    const suggestions=getTagSuggestions(query);
+    acFocusIdx=-1;
+    if(!suggestions.length){
+      tagAcList.innerHTML='';
+      tagAcList.classList.remove('show');
+      return;
+    }
+    const q=query.trim().toLowerCase();
+    tagAcList.innerHTML=suggestions.map((t,i)=>{
+      const hl=q?t.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>'):t;
+      return`<div class="tag-ac-item" data-tag="${t}" data-idx="${i}">${hl}</div>`;
+    }).join('');
+    tagAcList.classList.add('show');
+    tagAcList.querySelectorAll('.tag-ac-item').forEach(el=>{
+      el.addEventListener('mousedown',e=>{
+        e.preventDefault();
+        addTag(el.dataset.tag);
+        tagInput.value='';
+        renderTagAc('');
+        tagInput.focus();
+      });
+    });
+  }
+
+  function addTag(v){
+    const clean=v.trim().replace(/,$/,'');
+    if(clean&&!editTags.includes(clean)){editTags.push(clean);renderTagChips();}
+  }
+
+  tagInput.addEventListener('input',function(){
+    renderTagAc(this.value);
+  });
+
+  tagInput.addEventListener('keydown',function(e){
+    const items=tagAcList.querySelectorAll('.tag-ac-item');
+    if(e.key==='ArrowDown'){
+      e.preventDefault();
+      acFocusIdx=Math.min(acFocusIdx+1,items.length-1);
+      items.forEach((el,i)=>el.classList.toggle('focused',i===acFocusIdx));
+    } else if(e.key==='ArrowUp'){
+      e.preventDefault();
+      acFocusIdx=Math.max(acFocusIdx-1,0);
+      items.forEach((el,i)=>el.classList.toggle('focused',i===acFocusIdx));
+    } else if(e.key==='Enter'){
+      e.preventDefault();
+      if(acFocusIdx>=0&&items[acFocusIdx]){
+        addTag(items[acFocusIdx].dataset.tag);
+        this.value='';renderTagAc('');
+      } else if(this.value.trim()){
+        addTag(this.value.trim());
+        this.value='';renderTagAc('');
+      }
+    } else if(e.key===','){
+      e.preventDefault();
+      if(this.value.trim()){addTag(this.value.trim());this.value='';renderTagAc('');}
+    } else if(e.key==='Escape'){
+      tagAcList.classList.remove('show');acFocusIdx=-1;
+    } else if(e.key==='Backspace'&&!this.value&&editTags.length){
+      editTags.pop();renderTagChips();
+    }
+  });
+
+  tagInput.addEventListener('focus',function(){
+    if(this.value||!editTags.length) renderTagAc(this.value);
+    else renderTagAc('');
+  });
+
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#tag-input-wrap')&&!e.target.closest('#tag-ac-list')){
+      tagAcList.classList.remove('show');acFocusIdx=-1;
+    }
+  });
+
+  document.getElementById('mf-type').addEventListener('change',renderSzEditor);
+});
+
+// Size editor
+function renderSzEditor(){
+  const wrap=document.getElementById('sz-editor');
+  if(!editSizes.length){wrap.innerHTML='<div style="font-size:12px;color:var(--ink3);padding:8px 0">尚未加入尺寸，點「＋ 新增尺寸」</div>';return;}
+  wrap.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 26px;gap:6px;margin-bottom:4px"><span style="font-size:11px;color:var(--ink2)">尺寸</span><span style="font-size:11px;color:var(--ink2);text-align:center">單價 (NT$)</span><span></span></div>`+
+    editSizes.map((_,i)=>`<div class="sz-row"><input type="text" class="sz-inp-sz" placeholder="例：6mm" value="${editSizes[i].sz}"><input type="number" class="sz-inp-price" min="0" placeholder="0" value="${editSizes[i].price??''}"><button class="rm-sz-btn" data-i="${i}">×</button></div>`).join('');
+  wrap.querySelectorAll('.sz-inp-sz').forEach((el,i)=>{el.addEventListener('input',e=>{editSizes[i].sz=e.target.value;});el.addEventListener('blur',()=>{editSizes=sortSizes(editSizes);renderSzEditor();});});
+  wrap.querySelectorAll('.sz-inp-price').forEach((el,i)=>el.addEventListener('input',e=>{editSizes[i].price=e.target.value===''?null:parseFloat(e.target.value)||0;}));
+  wrap.querySelectorAll('.rm-sz-btn').forEach(btn=>btn.addEventListener('click',()=>{editSizes.splice(parseInt(btn.dataset.i),1);renderSzEditor();}));
+}
+function addSz(){editSizes.push({sz:'',price:null});renderSzEditor();}
+
+// Materials
+function saveMat(){
+  const name=document.getElementById('mf-name').value.trim();if(!name){toast('請輸入材料名稱');return;}
+  const type=document.getElementById('mf-type').value;
+  const sizes=sortSizes(editSizes.filter(s=>s.sz.trim()).map(s=>({sz:s.sz.trim(),price:s.price??0})));
+  if(!sizes.length){toast('請至少加入一個尺寸');return;}
+  const obj={id:matEditId||(type[0]+Date.now()),name,type,tags:[...editTags],sizes};
+  if(matEditId){const idx=materials.findIndex(m=>m.id===matEditId);if(idx>-1)materials[idx]=obj;}else materials.push(obj);
+  schedSave();resetMatForm();renderMatPage();renderMatFilters();toast((matEditId?'已更新：':'已新增：')+name);
+}
+function editMat(idx){
+  const m=materials[idx];if(!m)return;matEditId=m.id;document.getElementById('mf-name').value=m.name;document.getElementById('mf-type').value=m.type;
+  editTags=[...(m.tags||[])];renderTagChips();editSizes=m.sizes.map(s=>({sz:s.sz,price:s.price}));renderSzEditor();
+  document.getElementById('mat-form-title').textContent='編輯：'+m.name;document.getElementById('mat-save-btn').textContent='更新材料';document.getElementById('mat-cancel-btn').style.display='inline-flex';
+  swPage('materials',document.querySelectorAll('.ni')[2]);window.scrollTo(0,0);
+}
+function deleteMat(idx){if(!confirm('確定要刪除「'+materials[idx].name+'」？'))return;materials.splice(idx,1);schedSave();renderMatPage();renderMatFilters();toast('已刪除');}
+function resetMatForm(){
+  matEditId=null;editSizes=[];editTags=[];document.getElementById('mf-name').value='';document.getElementById('mf-type').value='bead';document.getElementById('tag-bare').value='';
+  renderTagChips();renderSzEditor();document.getElementById('mat-form-title').textContent='新增材料';document.getElementById('mat-save-btn').textContent='新增材料';document.getElementById('mat-cancel-btn').style.display='none';
+}
+function getAllTags(){const s=new Set();materials.forEach(m=>(m.tags||[]).forEach(t=>s.add(t)));return Array.from(s).sort();}
+function renderMatFilters(){
+  const types=['全部','珠子','配件','其他'];const tags=getAllTags();
+  document.getElementById('mat-filter-bar').innerHTML=types.map(t=>`<button class="mfp${matFilter===t?' active':''}" onclick="setMatFilter('${t}')">${t}</button>`).join('')+
+    (tags.length?'<span style="font-size:11px;color:var(--ink3);margin:0 4px">|</span>':'')+tags.map(t=>`<button class="mfp${matFilter===t?' active':''}" onclick="setMatFilter('${t}')">${t}</button>`).join('');
+}
+function setMatFilter(f){matFilter=f;renderMatFilters();renderMatPage();}
+function renderMatPage(){
+  const typeMap={bead:'珠子',acc:'配件',other:'其他'};const groups={bead:[],acc:[],other:[]};
+  materials.forEach((m,i)=>{
+    const isTypeFlt=['珠子','配件','其他'].includes(matFilter);
+    const isTagFlt=!isTypeFlt&&matFilter!=='全部';
+    const passType=matFilter==='全部'||isTagFlt||(typeMap[m.type]===matFilter);
+    const passTag=matFilter==='全部'||isTypeFlt||(m.tags||[]).includes(matFilter);
+    if(passType&&passTag)groups[m.type]?.push({...m,_i:i});
+  });
+  const wrap=document.getElementById('mat-list-wrap');wrap.innerHTML='';
+  ['bead','acc','other'].forEach(type=>{
+    const list=groups[type];if(!list||!list.length)return;
+    const section=document.createElement('div');section.innerHTML=`<div class="mat-section-hdr"><span class="cat-tag ${TYPE_CLS[type]}">${TYPE_LABEL[type]}</span></div>`;
+    list.forEach(m=>{
+      const div=document.createElement('div');div.className='mi-item';
+      const tagHtml=(m.tags||[]).map(t=>`<span style="display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;background:var(--surface2);color:var(--ink2);border:1px solid var(--border);margin-right:3px;margin-bottom:2px">${t}</span>`).join('');
+      div.innerHTML=`<div class="mi-info"><div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px"><span class="mi-name">${m.name}</span>${tagHtml}</div><div style="display:flex;flex-wrap:wrap;gap:3px">${m.sizes.map(s=>`<span class="ptag">${s.sz} NT$${s.price}</span>`).join('')}</div></div></div><div class="mi-acts"></div>`;
+      const acts=div.querySelector('.mi-acts');
+      const eb=document.createElement('button');eb.className='btn bs';eb.style.cssText='padding:3px 9px;font-size:11px';eb.textContent='編輯';eb.addEventListener('click',()=>editMat(m._i));
+      const db=document.createElement('button');db.className='btn bd';db.style.cssText='padding:3px 8px;font-size:11px';db.textContent='刪除';db.addEventListener('click',()=>deleteMat(m._i));
+      acts.appendChild(eb);acts.appendChild(db);section.appendChild(div);
+    });
+    wrap.appendChild(section);
+  });
+  if(!wrap.children.length)wrap.innerHTML='<div style="font-size:12px;color:var(--ink3);padding:12px 0;text-align:center">沒有符合的材料</div>';
+}
+
+// Board
+function gsl(){return['全部',...Array.from(new Set(products.map(p=>p.series||'默認')))];}
+function renderFilters(){document.getElementById('sfilters').innerHTML=gsl().map(s=>`<button class="fp${s===af?' active':''}" onclick="sf('${s}')">${s}</button>`).join('');}
+function sf(s){af=s;renderFilters();renderBoard();}
+function renderBoard(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  let list=products;if(af!=='全部')list=list.filter(p=>(p.series||'默認')===af);if(q)list=list.filter(p=>p.name.toLowerCase().includes(q)||(p.series||'').toLowerCase().includes(q)||(p.note||'').toLowerCase().includes(q));
+  const tbody=document.getElementById('board-tbody');
+  if(!list.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--ink3);padding:32px">尚無符合款式</td></tr>`;return;}
+  const groups=[];const seen=new Map();list.forEach(p=>{const s=p.series||'默認';if(!seen.has(s)){seen.set(s,[]);groups.push({series:s,items:seen.get(s)});}seen.get(s).push(p);});
+  let html='';
+  groups.forEach(g=>{
+    html+=`<tr class="group-hdr-row"><td colspan="8"><div class="group-hdr-inner">${ph(g.series)}<span class="group-count">${g.items.length} 款</span></div></td></tr>`;
+    g.items.forEach(p=>{const szCells=SIZE_ORDER.map(k=>{const v=p.prices[k];return v?`<td class="td-sz ${SZ_CLS[k]}">$${v}</td>`:`<td class="td-sz na">—</td>`;}).join('');html+=`<tr onclick="om(${p.id})"><td><div class="td-name">${p.name}</div></td><td><div style="font-size:11px;color:var(--ink3)">${p.note||''}</div></td><td class="td-cost">${p.cost?`NT$${p.cost}`:''}</td>${szCells}</tr>`;});
+  });
+  tbody.innerHTML=html;
+}
+function om(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  document.getElementById('moname').textContent=p.name;document.getElementById('mobadge').innerHTML=ph(p.series);
+  const cost=p.cost||0;let html='';
+  if(p.note)html+=`<div class="modal-section"><div class="modal-section-title">使用珠子</div><div style="font-size:12px;color:var(--ink2);line-height:1.8">${p.note}</div></div>`;
+  if(cost){
+    const cd=p.costDetail;
+    if(cd){html+=`<div class="modal-section"><div class="modal-section-title">成本明細</div><div class="modal-cost-row"><span>珠子材料</span><span>NT$${cd.beadMat||0}</span></div><div class="modal-cost-row"><span>配件材料</span><span>NT$${cd.accMat||0}</span></div><div class="modal-cost-row"><span>人力</span><span>NT$${cd.labor||0}</span></div><div class="modal-cost-row"><span>包材</span><span>NT$${cd.pkg||0}</span></div>${(cd.other||0)>0?`<div class="modal-cost-row"><span>其他</span><span>NT$${cd.other}</span></div>`:''}<div class="modal-cost-row total"><span>成本合計</span><span>NT$${cost}</span></div></div>`;}
+    else{const labor=100,pkg=60,matCost=Math.max(0,cost-labor-pkg);html+=`<div class="modal-section"><div class="modal-section-title">成本明細</div><div class="modal-cost-row"><span>珠子＋配件材料</span><span>NT$${matCost}</span></div><div class="modal-cost-row"><span>人力</span><span>NT$${labor}</span></div><div class="modal-cost-row"><span>包材</span><span>NT$${pkg}</span></div><div class="modal-cost-row total"><span>成本合計</span><span>NT$${cost}</span></div></div>`;}
+  }
+  html+=`<div class="modal-section"><div class="modal-section-title">各手圍售價</div><div class="modal-price-grid">${SIZE_ORDER.map(k=>{const v=p.prices[k];const sz=SIZES.find(s=>s.key===k);return`<div class="modal-price-cell${v?' active':''}"><div style="font-size:11px;font-weight:500;color:${v?'var(--accent)':'var(--ink3)'}">${k}</div><div style="font-size:10px;color:var(--ink3);margin:1px 0">${sz.range}</div><div style="font-size:16px;font-weight:600;color:${v?'var(--accent)':'var(--ink3)'}">${v?'$'+v:'—'}</div></div>`;}).join('')}</div></div>`;
+  document.getElementById('modal-body').innerHTML=html;document.getElementById('mo').classList.add('open');
+}
+function cm(){document.getElementById('mo').classList.remove('open');}
+
+// Calc
+function getMatPrice(name,size){const m=materials.find(x=>x.name===name);if(!m||!m.sizes)return null;const f=m.sizes.find(s=>s.sz===size);return f?f.price:null;}
+function getFirstSize(name){const m=materials.find(x=>x.name===name);return m?.sizes?.[0]?.sz||'';}
+function nameOpts(type,sel){const list=type==='bead'?materials.filter(m=>m.type==='bead'):materials.filter(m=>m.type==='acc'||m.type==='other');return list.map(m=>`<option value="${m.name}"${m.name===sel?' selected':''}>${m.name}</option>`).join('')+(type==='bead'?`<option value="自訂"${'自訂'===sel?' selected':''}>自訂</option>`:`<option value="自訂配件"${'自訂配件'===sel?' selected':''}>自訂配件</option>`);}
+function sizeOpts(name,sel){const m=materials.find(x=>x.name===name);if(!m||!m.sizes)return`<option value="${sel||''}">${sel||'—'}</option>`;return m.sizes.map(s=>`<option value="${s.sz}"${s.sz===sel?' selected':''}>${s.sz}</option>`).join('');}
+function rb(){
+  const w=document.getElementById('cw').value,ms=parseFloat(document.getElementById('cms').value);
+  document.getElementById('ctb').textContent=Math.round(WMM[w]/ms)+'顆';
+  document.getElementById('blist').innerHTML=calcBeads.map((b,i)=>{const autoP=b.name!=='自訂'?getMatPrice(b.name,b.size):null;return`<div class="mrow mh5" style="grid-template-columns:2fr 75px 58px 72px 24px"><select class="ms" onchange="ubead(${i},'name',this.value)">${nameOpts('bead',b.name)}</select><select class="ms" onchange="ubead(${i},'size',this.value)">${sizeOpts(b.name,b.size)}</select><input class="mi" type="number" min="0" value="${b.count}" onchange="ubead(${i},'count',this.value)"><input class="mi" type="number" min="0" placeholder="${autoP??'輸入'}" value="${b.customPrice!==null?b.customPrice:(autoP??'')}" onchange="ubead(${i},'customPrice',this.value)"><button class="dr" onclick="rmbead(${i})">×</button></div>`;}).join('');
+}
+function ra(){
+  document.getElementById('alist').innerHTML=calcAccs.map((a,i)=>{const autoP=getMatPrice(a.name,a.size);return`<div class="mrow mh4" style="grid-template-columns:2fr 68px 58px 72px 24px"><select class="ms" onchange="uacc(${i},'name',this.value)">${nameOpts('acc',a.name)}</select><select class="ms" onchange="uacc(${i},'size',this.value)">${sizeOpts(a.name,a.size)}</select><input class="mi" type="number" min="0" value="${a.count}" onchange="uacc(${i},'count',this.value)"><input class="mi" type="number" min="0" placeholder="${autoP??'輸入'}" value="${a.price!==null?a.price:(autoP??'')}" onchange="uacc(${i},'price',this.value)"><button class="dr" onclick="rmacc(${i})">×</button></div>`;}).join('');
+}
+function ubead(i,f,v){if(f==='name'){calcBeads[i].name=v;calcBeads[i].customPrice=null;calcBeads[i].size=getFirstSize(v)||'6mm';}else if(f==='size'){calcBeads[i].size=v;calcBeads[i].customPrice=null;}else if(f==='count')calcBeads[i].count=parseInt(v)||0;else calcBeads[i].customPrice=v===''?null:(parseFloat(v)||0);ca();}
+function uacc(i,f,v){if(f==='name'){calcAccs[i].name=v;calcAccs[i].price=null;calcAccs[i].size=getFirstSize(v)||'';}else if(f==='size'){calcAccs[i].size=v;calcAccs[i].price=null;}else if(f==='count')calcAccs[i].count=parseInt(v)||0;else calcAccs[i].price=v===''?null:(parseFloat(v)||0);ca();}
+function ab(){const first=materials.find(m=>m.type==='bead');calcBeads.push({name:first?.name||'白水晶',size:getFirstSize(first?.name)||'6mm',count:8,customPrice:null});ca();}
+function rmbead(i){calcBeads.splice(i,1);ca();}
+function aa(){const first=materials.find(m=>m.type==='acc'||m.type==='other');calcAccs.push({name:first?.name||'金隔片',size:getFirstSize(first?.name)||'3mm',count:4,price:null});ca();}
+function rmacc(i){calcAccs.splice(i,1);ca();}
+function ca(){
+  rb();ra();
+  let bc=0;calcBeads.forEach(b=>{const p=b.customPrice!==null?b.customPrice:getMatPrice(b.name,b.size);bc+=(parseInt(b.count)||0)*(p||0);});
+  let ac=0;calcAccs.forEach(a=>{const p=a.price!==null?a.price:getMatPrice(a.name,a.size);ac+=(parseInt(a.count)||0)*(p||0);});
+  const pkg=parseFloat(document.getElementById('cpkg').value)||0,lab=parseFloat(document.getElementById('clab').value)||0,misc=parseFloat(document.getElementById('cmisc').value)||0,mk=parseFloat(document.getElementById('cmk').value)||0;
+  const step=parseFloat(document.getElementById('price-step').value)||0,selectedSize=document.getElementById('cw').value,selIdx=SIZE_ORDER.indexOf(selectedSize);
+  const mat=bc+ac,base=mat+pkg+lab+misc,basePrice=Math.round(base*(1+mk/100)/10)*10;
+  document.getElementById('rmat').textContent='NT$'+mat;document.getElementById('rbase').textContent='NT$'+base;document.getElementById('rprice').textContent='NT$'+basePrice;
+  let bd=`<div class="cr"><span>珠子材料</span><span>NT$${bc}</span></div><div class="cr"><span>配件材料</span><span>NT$${ac}</span></div><div class="cr"><span>包材</span><span>NT$${pkg}</span></div><div class="cr"><span>人力</span><span>NT$${lab}</span></div><div class="cr"><span>其他</span><span>NT$${misc}</span></div>`;
+  calcBeads.forEach(b=>{const p=b.customPrice!==null?b.customPrice:getMatPrice(b.name,b.size);const s=(parseInt(b.count)||0)*(p||0);bd+=`<div class="cr sub"><span><span class="tb tb-b">珠</span>${b.name} ${b.size}×${b.count}</span><span>NT$${s}</span></div>`;});
+  calcAccs.forEach(a=>{const p=a.price!==null?a.price:getMatPrice(a.name,a.size);const s=(parseInt(a.count)||0)*(p||0);bd+=`<div class="cr sub"><span><span class="tb tb-a">配</span>${a.name} ${a.size}×${a.count}</span><span>NT$${s}</span></div>`;});
+  bd+=`<div class="cr tot"><span>基礎售價（${selectedSize}）</span><span>NT$${basePrice}</span></div>`;
+  document.getElementById('cbd').innerHTML=bd;
+  const allPrices={};SIZE_ORDER.forEach((k,i)=>{allPrices[k]=basePrice+(i-selIdx)*step;});
+  document.getElementById('size-prices').innerHTML=`<div style="font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">各手圍售價預覽（間距 ${step>0?'+'+step:'0'}）</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">`+
+    SIZE_ORDER.map(k=>{const sz=SIZES.find(s=>s.key===k);const isSel=k===selectedSize;return`<div style="text-align:center;padding:8px 4px;border-radius:var(--rs);background:${isSel?'var(--accent-bg)':'var(--surface2)'};border:1px solid ${isSel?'#C5BFF0':'var(--border)'}"><div style="font-size:11px;font-weight:500;color:${isSel?'var(--accent)':'var(--ink2)'}">${k}</div><div style="font-size:10px;color:var(--ink3);margin:1px 0">${sz.range}</div><div style="font-size:13px;font-weight:500;color:${isSel?'var(--accent)':'var(--ink)'}">NT$${allPrices[k]}</div></div>`;}).join('')+`</div>`;
+}
+function sfc(){
+  const name=document.getElementById('csn').value.trim();if(!name){toast('請輸入款式名稱');return;}
+  const pkg=parseFloat(document.getElementById('cpkg').value)||0,lab=parseFloat(document.getElementById('clab').value)||0,misc=parseFloat(document.getElementById('cmisc').value)||0,mk=parseFloat(document.getElementById('cmk').value)||0;
+  const step=parseFloat(document.getElementById('price-step').value)||0,selectedSize=document.getElementById('cw').value,selIdx=SIZE_ORDER.indexOf(selectedSize);
+  let bc=0;calcBeads.forEach(b=>{const p=b.customPrice!==null?b.customPrice:getMatPrice(b.name,b.size);bc+=(parseInt(b.count)||0)*(p||0);});
+  let ac=0;calcAccs.forEach(a=>{const p=a.price!==null?a.price:getMatPrice(a.name,a.size);ac+=(parseInt(a.count)||0)*(p||0);});
+  const base=bc+ac+pkg+lab+misc,basePrice=Math.round(base*(1+mk/100)/10)*10;
+  const prices={};SIZE_ORDER.forEach((k,i)=>{prices[k]=basePrice+(i-selIdx)*step;});
+  const costDetail={beadMat:bc,accMat:ac,labor:lab,pkg:pkg,other:misc,total:base};
+  const ex=products.find(p=>p.name===name);
+  if(ex){Object.assign(ex.prices,prices);ex.cost=base;ex.costDetail=costDetail;}
+  else{const nt=calcBeads.map(b=>`${b.name}${b.size}×${b.count}`).join('、');products.push({id:nid(),name,series:document.getElementById('css2').value.trim(),cost:base,costDetail,note:document.getElementById('csnt').value.trim()||nt,prices});}
+  renderBoard();renderFilters();renderML();schedSave();toast(`已儲存「${name}」全尺寸售價`);
+}
+
+// Manage
+function buildMSI(){document.getElementById('msi').innerHTML=SIZES.map(s=>`<div><label>${s.label}<br><span style="font-size:10px;color:var(--ink3)">${s.range}</span></label><input type="number" id="m${s.key}" min="0" placeholder="—"></div>`).join('');}
+function renderML(){
+  const el=document.getElementById('mlist');if(!products.length){el.innerHTML='';return;}
+  el.innerHTML=`<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">共 ${products.length} 款</div>`+products.map(p=>`<div class="mi-item"><div class="mi-info"><span class="mi-name">${p.name}</span>${ph(p.series)}${p.cost?`<span style="font-size:11px;color:var(--ink3)">NT$${p.cost}</span>`:''}</div><div class="mi-acts"><button class="btn bs" style="padding:3px 9px;font-size:11px" onclick="em(${p.id})">編輯</button><button class="btn bd" style="padding:3px 8px;font-size:11px" onclick="dp(${p.id})">刪除</button></div></div>`).join('');
+}
+function sm(){
+  const name=document.getElementById('mname').value.trim();if(!name){toast('請輸入款式名稱');return;}
+  const prices={};SIZES.forEach(s=>{const v=parseFloat(document.getElementById('m'+s.key).value);prices[s.key]=isNaN(v)?null:Math.round(v);});
+  const cost=parseFloat(document.getElementById('mcost').value)||null;
+  const obj={name,series:document.getElementById('mser').value.trim(),note:document.getElementById('mnote').value.trim(),cost,prices};
+  if(editId!==null){const idx=products.findIndex(p=>p.id===editId);if(idx>-1)products[idx]={...products[idx],...obj};}else products.push({id:nid(),...obj});
+  schedSave();rm();renderBoard();renderFilters();renderML();toast('已儲存');
+}
+function em(id){
+  const p=products.find(x=>x.id===id);if(!p)return;editId=id;document.getElementById('mname').value=p.name;document.getElementById('mser').value=p.series||'';document.getElementById('mnote').value=p.note||'';document.getElementById('mcost').value=p.cost||'';
+  SIZES.forEach(s=>{document.getElementById('m'+s.key).value=p.prices[s.key]||'';});
+  document.getElementById('mtit').textContent='編輯：'+p.name;document.getElementById('msb').textContent='更新款式';document.getElementById('mcb').style.display='inline-flex';
+  swPage('manage',document.querySelectorAll('.ni')[3]);window.scrollTo(0,0);
+}
+function rm(){
+  editId=null;['mname','mser','mnote','mcost'].forEach(id=>document.getElementById(id).value='');SIZES.forEach(s=>{document.getElementById('m'+s.key).value='';});
+  document.getElementById('mtit').textContent='新增款式';document.getElementById('msb').textContent='儲存款式';document.getElementById('mcb').style.display='none';
+}
+function dp(id){if(!confirm('確定刪除？'))return;products=products.filter(p=>p.id!==id);schedSave();renderBoard();renderFilters();renderML();toast('已刪除');}
+
+
+// ── 觸發匯入檔案選擇 ──
+function triggerImport(){
+  if(!confirm('⚠️ 還原備份會覆蓋目前所有資料（款式 + 材料），確定繼續？')){return;}
+  document.getElementById('import-file').value='';
+  document.getElementById('import-file').click();
+}
+
+// ── 讀取 JSON 並還原 ──
+function importBackup(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const json=JSON.parse(e.target.result);
+      if(!json.products||!json.materials){
+        toast('❌ 檔案格式不正確，無法還原');return;
+      }
+      products=json.products;
+      materials=json.materials;
+      materials.forEach(m=>{if(!m.tags)m.tags=[];});
+      // 立即同步到 Drive
+      await saveToDrive();
+      renderAll();
+      toast('✅ 已還原 '+products.length+' 款式、'+materials.length+' 筆材料');
+    }catch(err){
+      toast('❌ 讀取失敗：'+err.message);
+    }
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+
+// ════════════════════════════════
+//  材料單價 CSV 匯出
+// ════════════════════════════════
+function exportMatCSV(){
+  const BOM='\uFEFF';
+  // 收集所有尺寸
+  const allSizes=[];
+  materials.forEach(m=>m.sizes.forEach(s=>{if(!allSizes.includes(s.sz))allSizes.push(s.sz);}));
+  allSizes.sort((a,b)=>{const na=parseFloat(a),nb=parseFloat(b);return isNaN(na)||isNaN(nb)?a.localeCompare(b):na-nb;});
+
+  const headers=['名稱','類型','標籤',...allSizes];
+  const rows=materials.map(m=>{
+    const typeLabel={bead:'珠子',acc:'配件',other:'其他'}[m.type]||m.type;
+    const tags=(m.tags||[]).join('|');
+    const prices=allSizes.map(sz=>{
+      const found=m.sizes.find(s=>s.sz===sz);
+      return found?found.price:'';
+    });
+    return[m.name,typeLabel,tags,...prices].map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',');
+  });
+
+  const csv=BOM+[headers.join(','),...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const now=new Date();
+  const ts=now.getFullYear()+''+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='sheans-materials-'+ts+'.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('已匯出 '+materials.length+' 筆材料');
+}
+
+// ════════════════════════════════
+//  材料單價 CSV 匯入
+// ════════════════════════════════
+function triggerMatImport(){
+  document.getElementById('mat-import-file').value='';
+  document.getElementById('mat-import-file').click();
+}
+
+function importMatCSV(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const rows=parseCSV(e.target.result);
+      if(rows.length<2){toast('❌ CSV 格式不正確');return;}
+      const headers=rows[0];
+      const nameIdx=headers.findIndex(h=>h==='名稱');
+      const typeIdx=headers.findIndex(h=>h==='類型');
+      const tagIdx=headers.findIndex(h=>h==='標籤');
+      if(nameIdx<0){toast('❌ 找不到「名稱」欄位');return;}
+
+      // 尺寸欄位：標題不是名稱/類型/標籤的都是尺寸
+      const sizeHeaders=headers.map((h,i)=>({h,i})).filter(({h})=>h!=='名稱'&&h!=='類型'&&h!=='標籤');
+
+      let added=0,updated=0;
+      rows.slice(1).forEach(row=>{
+        if(!row[nameIdx]||!row[nameIdx].trim())return;
+        const name=row[nameIdx].trim();
+        const typeRaw=typeIdx>=0?row[typeIdx]:'';
+        const type={珠子:'bead',配件:'acc',其他:'other'}[typeRaw]||'bead';
+        const tags=tagIdx>=0&&row[tagIdx]?row[tagIdx].split('|').map(t=>t.trim()).filter(Boolean):[];
+        const sizes=sizeHeaders
+          .filter(({i})=>row[i]!==undefined&&row[i]!=='')
+          .map(({h,i})=>({sz:h,price:parseFloat(row[i])||0}));
+        if(!sizes.length)return;
+
+        const existing=materials.findIndex(m=>m.name===name);
+        const obj={id:existing>=0?materials[existing].id:(type[0]+Date.now()+Math.random()),name,type,tags,sizes};
+        if(existing>=0){materials[existing]=obj;updated++;}
+        else{materials.push(obj);added++;}
+      });
+
+      schedSave();renderMatPage();renderMatFilters();
+      toast(`✅ 匯入完成：新增 ${added} 筆、更新 ${updated} 筆`);
+    }catch(err){toast('❌ 匯入失敗：'+err.message);console.error(err);}
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+// ════════════════════════════════
+//  查價板 CSV 匯入
+// ════════════════════════════════
+function triggerBoardImport(){
+  if(!confirm('匯入 CSV 會新增或更新款式（同名款式會更新價格），不會刪除現有款式。確定繼續？'))return;
+  document.getElementById('board-import-file').value='';
+  document.getElementById('board-import-file').click();
+}
+
+function importBoardCSV(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const rows=parseCSV(e.target.result);
+      if(rows.length<2){toast('❌ CSV 格式不正確');return;}
+      const headers=rows[0];
+      const get=(label)=>headers.findIndex(h=>h.includes(label));
+      const nameIdx=get('款式名稱');
+      const seriesIdx=get('系列');
+      const noteIdx=get('使用珠子');
+      const costIdx=get('成本');
+      const xsIdx=get('XS');
+      const sIdx=headers.findIndex(h=>h==='S(12~13.5)'||h==='S');
+      const mIdx=get('M(');
+      const lIdx=headers.findIndex(h=>h==='L(16~17.5)'||h==='L');
+      const xlIdx=get('XL');
+
+      if(nameIdx<0){toast('❌ 找不到「款式名稱」欄位');return;}
+
+      let added=0,updated=0;
+      rows.slice(1).forEach(row=>{
+        if(!row[nameIdx]||!row[nameIdx].trim())return;
+        const name=row[nameIdx].trim();
+        const pv=(i)=>i>=0&&row[i]?parseFloat(row[i])||null:null;
+        const prices={XS:pv(xsIdx),S:pv(sIdx),M:pv(mIdx),L:pv(lIdx),XL:pv(xlIdx)};
+        const existing=products.findIndex(p=>p.name===name);
+        if(existing>=0){
+          Object.assign(products[existing].prices,prices);
+          if(costIdx>=0&&row[costIdx])products[existing].cost=parseFloat(row[costIdx])||products[existing].cost;
+          updated++;
+        }else{
+          products.push({id:nid(),name,series:seriesIdx>=0?row[seriesIdx]||'':'',note:noteIdx>=0?row[noteIdx]||'':'',cost:pv(costIdx),prices});
+          added++;
+        }
+      });
+
+      schedSave();renderBoard();renderFilters();renderML();
+      toast(`✅ 匯入完成：新增 ${added} 款、更新 ${updated} 款`);
+    }catch(err){toast('❌ 匯入失敗：'+err.message);console.error(err);}
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+// ════════════════════════════════
+//  通用 CSV 解析（支援引號、換行）
+// ════════════════════════════════
+function parseCSV(text){
+  // 移除 BOM
+  text=text.replace(/^\uFEFF/,'');
+  const rows=[];let row=[],field='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i],n=text[i+1];
+    if(inQ){
+      if(c==='"'&&n==='"'){field+='"';i++;}
+      else if(c==='"'){inQ=false;}
+      else field+=c;
+    }else{
+      if(c==='"'){inQ=true;}
+      else if(c===','){row.push(field.trim());field='';}
+      else if(c==='\r'&&n==='\n'){row.push(field.trim());rows.push(row);row=[];field='';i++;}
+      else if(c==='\n'||c==='\r'){row.push(field.trim());rows.push(row);row=[];field='';}
+      else field+=c;
+    }
+  }
+  if(field||row.length)row.push(field.trim());
+  if(row.some(f=>f!==''))rows.push(row);
+  return rows;
+}
+
+// ── 匯出備份（JSON）──
+function exportBackup(){
+  const now=new Date();
+  const ts=now.getFullYear()+''+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  const data=JSON.stringify({products,materials},null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='sheans-backup-'+ts+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已匯出備份 sheans-backup-'+ts+'.json');
+}
+
+// ── 匯出查價板（CSV，可用 Excel 開啟）──
+function exportCSV(){
+  const BOM='\uFEFF'; // UTF-8 BOM，讓 Excel 正確顯示中文
+  const headers=['款式名稱','系列','使用珠子','成本','XS(10~11.5)','S(12~13.5)','M(14~15.5)','L(16~17.5)','XL(18~19.5)'];
+  const rows=products.map(p=>[
+    p.name,
+    p.series||'',
+    p.note||'',
+    p.cost||'',
+    p.prices.XS||'',
+    p.prices.S||'',
+    p.prices.M||'',
+    p.prices.L||'',
+    p.prices.XL||'',
+  ].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  const csv=BOM+[headers.join(','),...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const now=new Date();
+  const ts=now.getFullYear()+''+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='sheans-priceboard-'+ts+'.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已匯出 '+products.length+' 筆資料');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')cm();});
+</script>
+</body>
+</html>
